@@ -5,6 +5,8 @@ section .data
     buffer_size dd 1024             ; Define the size of the buffer
     echo_fd dd 0                    ; Socket file descriptor
     number_read dd 0                ; Number of bytes read
+    server_msg db "Server: ", 0     ; Message to send to the client
+    server_msg_len equ $ - server_msg ; Length of the message
 
 section .text
     global _echo_read_from_stdin    ; Make the function available to other files
@@ -22,8 +24,23 @@ _read_from_fd:
     mov esi, buffer                 ; Buffer to read into
     mov edx, buffer_size            ; Buffer size
     syscall                         ; Call the kernel to read from stdin
+    mov byte [esi + eax], 0         ; Null-terminate the string
     mov [number_read], eax          ; Save the number of bytes read into the variable
+    call _display_read
     ret                             ; Return from the function
+
+_display_read:
+    mov eax, 1                      ; System call number for "write"
+    mov edi, 1                      ; File descriptor (stdout)
+    mov esi, server_msg             ; Message to print
+    mov edx, server_msg_len         ; Message length
+    syscall                         ; Call the kernel to print the message
+
+    mov eax, 1                      ; System call number for "write"
+    mov edi, 1                      ; File descriptor (stdout)
+    mov esi, buffer                 ; Message to print
+    mov edx, [number_read]          ; Message length
+    syscall                         ; Call the kernel to print the message
 
 _write_to_fd:
     mov eax, 1                      ; System call number for "write"

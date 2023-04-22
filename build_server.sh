@@ -1,4 +1,3 @@
-mkdir build
 cd build/
 nasm -f elf64 -o echo.o ../echo.asm
 nasm -f elf64 -o echo_server.o ../server.asm
